@@ -1,0 +1,71 @@
+<!--
+  ~ Copyright 2015 Bersenev Dmitry molasdin@outlook.com
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project name="IO" default="all" basedir=".">
+
+    <property name="out.path" value="${basedir}/target/native-result"/>
+
+    <target name="all" depends="build">
+
+    </target>
+
+    <target name="build">
+        <mkdir dir="${out.path}"/>
+
+        <condition property="cdef" value="SERIAL_WIN" else="SERIAL_NIX">
+            <os family="windows"/>
+        </condition>
+
+        <condition property="native.marker" value="win32">
+            <os family="windows"/>
+        </condition>
+
+        <condition property="native.marker" value="darwin">
+            <os family="mac"/>
+        </condition>
+
+        <condition property="native.marker" value="freebsd">
+            <os family="unix" name="FreeBSD"/>
+        </condition>
+
+        <condition property="native.marker" value="linux">
+            <os name="unix"/>
+        </condition>
+
+        <echo message="Native marker: ${native.marker}"/>
+
+        <script language="javascript">
+            var resultName = "serial_" + project.getProperty("native.marker") + "_" + project.getProperty("os.arch");
+            resultName = java.lang.System.mapLibraryName(resultName);
+            resultName = project.getProperty("out.path") + "/" + resultName;
+            project.setProperty("outfile", resultName);
+        </script>
+
+        <exec dir="${native.sources}" executable="g++" failonerror="true">
+            <arg value="-shared"/>
+            <arg value="-o${outfile}"/>
+            <arg value="-std=c++11"/>
+            <arg value="-D${cdef}"/>
+            <arg value="-I${sources}"/>
+            <arg value="-I${java.home}/../include"/>
+            <arg value="-I${java.home}/../include/${native.marker}"/>
+            <arg value="serial_nix.cpp"/>
+            <arg value="serial_win.cpp"/>
+            <arg value="serial_jni.cpp"/>
+        </exec>
+    </target>
+
+</project>
