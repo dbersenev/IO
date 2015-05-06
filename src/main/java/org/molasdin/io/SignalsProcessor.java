@@ -193,10 +193,6 @@ public abstract class SignalsProcessor implements Runnable {
                     }
                 }
             }
-
-            if (!terminateFlag) {
-                Thread.yield();
-            }
         }
     }
 
